@@ -20,6 +20,14 @@ ptm_col <- ptm %>%
          -number,
          -final)
 
+#Fixes for authorship can be made
+ptm %>% 
+  count(`taxon name for relation`,`Species Author`) %>% 
+  View()
+
+ptm %>% 
+  count(Phylum, Class)
+
 #plotting the points
 leaflet() %>% 
   addProviderTiles("OpenStreetMap.Mapnik") %>% 
@@ -27,6 +35,50 @@ leaflet() %>%
                    popup = paste(ptm$`Collector Number`, ptm$Country,
                                  ptm$Location),
                    clusterOptions = markerClusterOptions())
+
+#upper case - habitat
+#takes a dataframe and makes the first word in the column lowercase
+capitalize <- function(ds){
+  split <- str_split(ds$Habitat," ",n = 2) 
+  
+  cap <- map(split,~str_to_sentence(.x[1]))
+  
+  ds$Habitat <- map2(split,cap,~c(.y,.x[2]) %>% 
+                       paste(.,collapse = " "))
+  
+  ds$Habitat <- gsub("NA","",ds$Habitat)
+  
+  return(ds)
+}
+
+ptm_cap <- capitalize(ptm_col)
+
+#Remove coralline ""?
+ptm_cap %>% 
+  mutate(Genus2 = if_else(str_detect(Genus, "Coralline"),"Coralline", Genus)) %>% 
+  select(Genus, Genus2, Species) %>% 
+  View()
+
+#fix depth???
+#hand cleaning might be needed
+ptm_cap %>% 
+  select(Depth) %>% 
+  arrange() %>% 
+  View()
+
+#microhabitat?
+ptm_cap %>% 
+  select(Microhabitat) %>% 
+  count(Microhabitat) %>% 
+  arrange() %>% 
+  View()
+#Katy vs Katherine R. Hind in determined by
+ptm_cap %>% 
+  mutate(Det = str_replace(`Determined By`,"Katy R. Hind", "Katherine R. Hind")) %>% 
+  select(`Determined By`, Det) %>% 
+  View()
+
+#Giant barnable? - fix after asking Patrick?
 
 #Fix PTM-1192, PTM-1718
 #fixed in the database March 23
