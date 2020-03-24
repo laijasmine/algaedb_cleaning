@@ -9,12 +9,16 @@ ptm_col <- ptm %>%
   mutate(s_coll_no = str_remove(`Collector Number`, "-"),
          space_coll_no = str_remove(s_coll_no, " "),
          no_ptm = str_remove(s_coll_no, "PTM"),
-         no_ptm = as.numeric(no_ptm)) %>% 
-  select('Collector Number',
-         s_coll_no,
-         space_coll_no,
-         no_ptm) %>% 
-  arrange(no_ptm)
+         number = as.numeric(no_ptm),
+         final = if_else(no_ptm %in% c("207b","207a"),
+                          no_ptm,
+                          as.character(number)),
+         `Collector Number` = paste0("PTM",final)) %>% 
+  select(-s_coll_no,
+         -space_coll_no,
+         -no_ptm,
+         -number,
+         -final)
 
 #plotting the points
 leaflet() %>% 
@@ -25,6 +29,9 @@ leaflet() %>%
                    clusterOptions = markerClusterOptions())
 
 #Fix PTM-1192, PTM-1718
+#fixed in the database March 23
+#PTM-1192 missing negative
+#PTM-1718 63 and 36 mixed up
 ptm %>% 
   filter(`Collector Number` %in% c("PTM-1192", "PTM-1718")) %>% 
   select(`Accession Number`,
@@ -32,5 +39,4 @@ ptm %>%
          Genus, Species, 
          VLatDegree,VLatMinute,VLatSecond,
          VLongDegree,VLongMinute, VLongSecond,
-         Geo_LatDecimal,Geo_LongDecimal) %>% 
-  View()
+         Geo_LatDecimal,Geo_LongDecimal)
