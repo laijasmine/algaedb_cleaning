@@ -93,3 +93,6 @@ upload <- ptm_kat %>%
          `Determined By`,
          `Collector Number`,
          UUID)
+
+#save
+write_csv(upload, "03_results/2020Mar27_ptm_fix.csv")
